@@ -18,6 +18,7 @@ services:
     restart: always
     ports:
       - 6379:6379
+    command: redis-server --requirepass pass
     volumes:
       - ./storage/redis/data:/data
 

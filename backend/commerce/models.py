@@ -39,7 +39,7 @@ class Check(models.Model):
     type = models.CharField(max_length=10, choices=CheckEnum.CHECK_TYPE, verbose_name="Тип чека")
     order = JSONField(verbose_name="Информация о заказе")
     status = models.CharField(max_length=10, choices=CheckEnum.CHECK_STATUS, verbose_name="Статус чека")
-    pdf_file = models.FileField(verbose_name="Cсылка на PDF-файл")
+    pdf_file = models.FileField(verbose_name="Cсылка на PDF-файл", null=True)
 
     def __str__(self):
         return f"<Check: type {self.type}, status: {self.status}>"

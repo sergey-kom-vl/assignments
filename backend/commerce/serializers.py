@@ -21,4 +21,4 @@ class CheckSerializer(serializers.ModelSerializer):
     class Meta:
         model = Check
         fields = 'id', 'printer_id', 'type', 'order', 'status', 'pdf_file',
-        read_only_fields = 'id',
+        read_only_fields = 'id', 'pdf_file',
