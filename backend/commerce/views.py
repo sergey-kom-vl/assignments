@@ -1,10 +1,8 @@
-import asyncio
-
+from django_rq import enqueue as rq_enqueue
 from rest_framework import viewsets
-from django_rq import enqueue as rq_enqueue, job
 
 from .models import Point, Printer, Check
-from .pdf_generator import generate_check_file
+from .tasks import generate_check_file
 from .serializers import PointSerializer, PrinterSerializer, CheckSerializer
 
 
@@ -24,6 +22,8 @@ class CheckViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        # rq_enqueue(generate_check_file, request, response.data)
-        asyncio.run(generate_check_file(request, response.data))
+        rq_enqueue(generate_check_file, response.data)
+        # generate_check_file(response.data)
+        # rq_enqueue(generate_pdf_for_check, data)
+
         return response

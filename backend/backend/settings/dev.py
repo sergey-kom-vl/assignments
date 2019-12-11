@@ -1,4 +1,5 @@
 ALLOWED_HOSTS = '127.0.0.1', 'localhost',
+DOCKER_HOST = '127.0.0.1'
 
 DATABASES = {
     'default': {
@@ -6,14 +7,14 @@ DATABASES = {
         'NAME': 'assignments',
         'USER': 'user',
         'PASSWORD': 'pass',
-        'HOST': '192.168.220.130',
+        'HOST': DOCKER_HOST,
         'PORT': '5432',
     }
 }
 
 RQ_QUEUES = {
     'default': {
-        'HOST': '192.168.220.130',
+        'HOST': DOCKER_HOST,
         'PORT': 6379,
         'DB': 0,
         'PASSWORD': 'pass',
@@ -21,4 +22,4 @@ RQ_QUEUES = {
     },
 }
 
-WKHTMLTOPDF_URL = 'http://192.168.220.130:8080/'
+WKHTMLTOPDF_URL = f'http://{DOCKER_HOST}:8080'
