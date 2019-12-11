@@ -37,7 +37,7 @@
 | ---------- | ------------ | --------------- | --------------------------------- |
 | name       | CharField    |                 | название принтера                 |
 | api_key    | CharField    |                 | ключ доступа к API                |
-| check_type | CharField    | kitchen\|client | тип чека которые печатает принтер |
+| check_type | CharField    | kitchen\client  | тип чека которые печатает принтер |
 | point_id   | IntegerField |                 | точка к которой привязан принтер  |
 
 2. Чек (Check). Информация о заказе для каждого чека хранится в JSON, нет необходимости делать отдельные модели.
@@ -45,9 +45,9 @@
 | Поле       | Тип        | Значение               | Описание                     |
 | ---------- | ---------- | ---------------------- | ---------------------------- |
 | printer_id | ForeignKey |                        | принтер                      |
-| type       | CharField  | kitchen\|client        | тип чека                     |
+| type       | CharField  | kitchen\client         | тип чека                     |
 | order      | JSONField  |                        | информация о заказе          |
-| status     | CharField  | new\|rendered\|printed | статус чека                  |
+| status     | CharField  | new\rendered\printed   | статус чека                  |
 | pdf_file   | FileField  |                        | ссылка на созданный PDF-файл |
 
 ### API
