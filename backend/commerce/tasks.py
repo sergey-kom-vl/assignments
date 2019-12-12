@@ -14,7 +14,7 @@ def generate_check_file(check):
     if os.path.isfile(pdf_file_path):
         return Exception
 
-    response = requests.post(url=settings.WKHTMLTOPDF_URL,
+    response = requests.post(url=settings.HTML2PDF_URL,
                              files={'file': _get_file_content(_get_file_name(check), check)})
 
     _add_pdf_from_check_model(check, pdf_file_path, response.content)

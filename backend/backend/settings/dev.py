@@ -22,4 +22,4 @@ RQ_QUEUES = {
     },
 }
 
-WKHTMLTOPDF_URL = f'http://{DOCKER_HOST}:8080'
+HTML2PDF_URL = f'http://{DOCKER_HOST}:8080'

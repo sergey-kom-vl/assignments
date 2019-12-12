@@ -12,7 +12,7 @@ class PointAdmin(admin.ModelAdmin):
 
 @admin.register(Printer)
 class PrinterAdmin(admin.ModelAdmin):
-    list_display = 'id', 'name', 'check_type',
+    list_display = 'id', 'name', 'check_type', 'api_key',
     search_fields = 'name',
     ordering = 'name',
 

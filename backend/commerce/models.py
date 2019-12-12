@@ -55,6 +55,16 @@ class Printer(models.Model):
         check.save()
         rq_enqueue(generate_check_file, check)
 
+    def there_is_check_file_to_print(self, check_id):
+        check = self.checks.filter(id=check_id)
+
+        if len(check) == 0:
+            return "Данного чека не существует"
+        elif check[0].status == CheckEnum.STATUS_NEW:
+            return "Для данного чека не сгенерирован PDF-файл"
+
+        return ""
+
 
 class Check(models.Model):
     class Meta:
@@ -70,3 +80,10 @@ class Check(models.Model):
 
     def __str__(self):
         return f"Чек №{self.id}"
+
+    def get_file_for_print(self):
+        if self.status != CheckEnum.STATUS_PRINTED:
+            self.status = CheckEnum.STATUS_PRINTED
+            self.save()
+
+        return self.pdf_file
