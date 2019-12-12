@@ -1,8 +1,9 @@
+from django.db.models import Q
 from django.http import JsonResponse, FileResponse
 from rest_framework import viewsets
 
 from .enums import CheckEnum
-from .models import Point, Check, Printer
+from .models import Check, Printer
 from .permissions import PrinterApiPermission
 
 
@@ -21,18 +22,18 @@ class CheckCreateViewSet(viewsets.ModelViewSet):
     authentication_classes = ()
 
     def create(self, request, *args, **kwargs):
-        current_point = Point.objects.get(id=request.data["point_id"])
+        printers = Printer.objects.filter(point_id=request.data["point_id"])
 
-        error_message = current_point.is_printout_checks_for_order(order_id=request.data["id"])
+        error_message = Printer.is_printout_checks_for_order(printers, order_id=request.data["id"])
         if error_message != "":
             return JsonResponse({"error": error_message}, status=400)
 
-        current_point.create_checks(order_data=request.data)
+        Printer.create_checks(printers, order_data=request.data)
         return JsonResponse({"ok": "Чеки успешно созданы"})
 
 
 class NewCheckViewSet(BaseApiViewSet):
-    queryset = Check.objects.filter(status=CheckEnum.STATUS_NEW)
+    queryset = Check.objects.filter(~Q(status=CheckEnum.STATUS_NEW))
 
     def list(self, request, *args, **kwargs):
         checks = [{"id": check.id} for check in self.queryset.filter(printer_id__api_key=request.GET["api_key"])]

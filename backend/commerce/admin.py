@@ -1,13 +1,6 @@
 from django.contrib import admin
 
-from .models import Point, Printer, Check
-
-
-@admin.register(Point)
-class PointAdmin(admin.ModelAdmin):
-    list_display = 'id', 'name',
-    search_fields = 'name',
-    ordering = 'name',
+from .models import Printer, Check
 
 
 @admin.register(Printer)

@@ -6,31 +6,6 @@ from .enums import CheckEnum
 from .tasks import generate_check_file
 
 
-class Point(models.Model):
-    class Meta:
-        verbose_name = 'Точка продажы'
-        verbose_name_plural = 'Точки продажи'
-
-    name = models.CharField(max_length=50, unique=True, verbose_name="Название")
-
-    def __str__(self):
-        return self.name
-
-    def is_printout_checks_for_order(self, order_id):
-        printers = self.printers.all()
-
-        if len(printers) == 0:
-            return "Для данной точки не настроено ни одного принтера"
-        elif sum(printer.checks.filter(order__id=order_id).count() for printer in printers) > 0:
-            return "Для данного заказа уже созданы чеки"
-
-        return ""
-
-    def create_checks(self, order_data):
-        for printer in self.printers.all():
-            printer.create_check(order_data=order_data)
-
-
 class Printer(models.Model):
     class Meta:
         verbose_name = 'Принтер'
@@ -40,11 +15,15 @@ class Printer(models.Model):
     api_key = models.CharField(max_length=100, unique=True, verbose_name="Ключ доступа к API")
     check_type = models.CharField(max_length=10, choices=CheckEnum.CHECK_TYPE, verbose_name="Тип печатаемого чека")
 
-    point_id = models.ForeignKey(Point, related_name='printers', on_delete=models.CASCADE,
-                                 verbose_name="Привязанная точка")
+    point_id = models.IntegerField(verbose_name="Привязанная точка")
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def create_checks(cls, printers, order_data):
+        for printer in printers:
+            printer.create_check(order_data=order_data)
 
     def create_check(self, order_data):
         check = Check(printer_id=self,
@@ -54,6 +33,15 @@ class Printer(models.Model):
 
         check.save()
         rq_enqueue(generate_check_file, check)
+
+    @classmethod
+    def is_printout_checks_for_order(cls, printers, order_id):
+        if len(printers) == 0:
+            return "Для данной точки не настроено ни одного принтера"
+        elif sum(printer.checks.filter(order__id=order_id).count() for printer in printers) > 0:
+            return "Для данного заказа уже созданы чеки"
+
+        return ""
 
     def there_is_check_file_to_print(self, check_id):
         check = self.checks.filter(id=check_id)
