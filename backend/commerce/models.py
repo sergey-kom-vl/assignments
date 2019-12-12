@@ -67,10 +67,10 @@ class Check(models.Model):
     pdf_file = models.FileField(verbose_name="Cсылка на PDF-файл", null=True)
 
     def __str__(self):
-        return f"Чек №{self.id}"
+        return f"<Чек id={self.id}>"
 
     def get_file_for_print(self):
-        if self.status != CheckEnum.STATUS_PRINTED:
+        if self.status == CheckEnum.STATUS_RENDERED:
             self.status = CheckEnum.STATUS_PRINTED
             self.save()
 
