@@ -24,7 +24,7 @@ class CheckCreateViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         printers = Printer.objects.filter(point_id=request.data["point_id"])
 
-        error_message = Printer.is_printout_checks_for_order(printers, order_id=request.data["id"])
+        error_message = Printer.is_printout_checks_for_order(printers, order_id=int(request.data["id"]))
         if error_message != "":
             return JsonResponse({"error": error_message}, status=400)
 
