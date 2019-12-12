@@ -22,3 +22,11 @@ class CheckSerializer(serializers.ModelSerializer):
         model = Check
         fields = 'id', 'printer_id', 'type', 'order', 'status', 'pdf_file',
         read_only_fields = 'id', 'pdf_file',
+
+
+class CheckCreateFormSerializer(serializers.ModelSerializer):
+    price = serializers.IntegerField(required=True)
+    items = serializers.JSONField(required=True)
+    address = serializers.CharField(required=True)
+    client = serializers.JSONField(required=True)
+    point_id = serializers.IntegerField(required=True)

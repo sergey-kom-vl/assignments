@@ -1,6 +1,9 @@
-from django.db import models
-from .enums import CheckEnum
 from django.contrib.postgres.fields import JSONField
+from django.db import models
+from django_rq import enqueue as rq_enqueue
+
+from .enums import CheckEnum
+from .tasks import generate_check_file
 
 
 class Point(models.Model):
@@ -11,7 +14,21 @@ class Point(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name="Название")
 
     def __str__(self):
-        return f"<Point: name {self.name}>"
+        return self.name
+
+    def is_printout_checks_for_order(self, order_id):
+        printers = self.printers.all()
+
+        if len(printers) == 0:
+            return "Для данной точки не настроено ни одного принтера"
+        elif sum(printer.checks.filter(order__id=order_id).count() for printer in printers) > 0:
+            return "Для данного заказа уже созданы чеки"
+
+        return ""
+
+    def create_checks(self, order_data):
+        for printer in self.printers.all():
+            printer.create_check(order_data=order_data)
 
 
 class Printer(models.Model):
@@ -23,10 +40,20 @@ class Printer(models.Model):
     api_key = models.CharField(max_length=100, unique=True, verbose_name="Ключ доступа к API")
     check_type = models.CharField(max_length=10, choices=CheckEnum.CHECK_TYPE, verbose_name="Тип печатаемого чека")
 
-    point_id = models.ForeignKey(Point, on_delete=models.CASCADE, verbose_name="Привязанная точка")
+    point_id = models.ForeignKey(Point, related_name='printers', on_delete=models.CASCADE,
+                                 verbose_name="Привязанная точка")
 
     def __str__(self):
-        return f"<Printer: name {self.name}>"
+        return self.name
+
+    def create_check(self, order_data):
+        check = Check(printer_id=self,
+                      type=self.check_type,
+                      order=order_data,
+                      status=CheckEnum.STATUS_NEW)
+
+        check.save()
+        rq_enqueue(generate_check_file, check)
 
 
 class Check(models.Model):
@@ -34,7 +61,7 @@ class Check(models.Model):
         verbose_name = 'Чек'
         verbose_name_plural = 'Чеки'
 
-    printer_id = models.ForeignKey(Printer, on_delete=models.CASCADE, verbose_name="Принтер")
+    printer_id = models.ForeignKey(Printer, related_name='checks', on_delete=models.CASCADE, verbose_name="Принтер")
 
     type = models.CharField(max_length=10, choices=CheckEnum.CHECK_TYPE, verbose_name="Тип чека")
     order = JSONField(verbose_name="Информация о заказе")
@@ -42,4 +69,4 @@ class Check(models.Model):
     pdf_file = models.FileField(verbose_name="Cсылка на PDF-файл", null=True)
 
     def __str__(self):
-        return f"<Check: type {self.type}, status: {self.status}>"
+        return f"Чек №{self.id}"
