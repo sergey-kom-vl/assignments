@@ -1,27 +1,22 @@
 from django.http import JsonResponse
 from rest_framework import viewsets
 
-from .models import Point, Printer, Check
-from .serializers import PointSerializer, PrinterSerializer, CheckSerializer, CheckCreateFormSerializer
+from .enums import CheckEnum
+from .models import Point, Check
+from .permissions import PrinterApiPermission
 
 
-class PointViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Point.objects.all()
-    serializer_class = PointSerializer
+class BaseApiViewSet(viewsets.ViewSet):
+    permission_classes = PrinterApiPermission,
 
-
-class PrinterViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Printer.objects.all()
-    serializer_class = PrinterSerializer
-
-
-class CheckViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Check.objects.all()
-    serializer_class = CheckSerializer
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        if response.status_code == 403:
+            return JsonResponse({"error": "Ошибка авторизации"}, status=401)
+        return response
 
 
 class CheckCreateViewSet(viewsets.ModelViewSet):
-    serializer_class = CheckCreateFormSerializer
     permission_classes = ()
     authentication_classes = ()
 
@@ -34,3 +29,11 @@ class CheckCreateViewSet(viewsets.ModelViewSet):
 
         current_point.create_checks(order_data=request.data)
         return JsonResponse({"ok": "Чеки успешно созданы"})
+
+
+class NewCheckViewSet(BaseApiViewSet):
+    queryset = Check.objects.filter(status=CheckEnum.STATUS_NEW)
+
+    def list(self, request, *args, **kwargs):
+        checks = [{"id": check.id} for check in self.queryset.filter(printer_id__api_key=request.GET["api_key"])]
+        return JsonResponse({"checks": checks})
