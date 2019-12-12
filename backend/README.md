@@ -1,3 +1,27 @@
+# Процесс запуска проекта, собранного по тестовому задания по python
+
+Для запуска сервиса необходимо выполнить:
+
+- запуск окружения 
+    ```bash
+    cd project
+    sudo docker-compose up
+    ```
+
+- запуск `rq` (с активированным окружением)
+    ```bash
+    cd backend
+    python manage.py rqworker default
+    ```
+
+- подготовка базы данных, тестирование и запуск `django` приложения
+    ```bash
+    cd backend
+    python manage.py migrate
+    python manage.py test
+    python manage.py runserver
+    ```
+
 # Тестовое задание для разработчика на python
 
 У сети ресторанов доставки "ФорФар" есть множество точек, на которых готовятся заказы для клиентов.
